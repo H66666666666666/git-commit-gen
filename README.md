@@ -1,129 +1,161 @@
 # git-commit-gen
 
-AI-powered Git commit message generator that follows the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+> 🤖 AI 驱动的 Git Commit 信息生成器 —— 让你的 commit 信息更专业、更规范
 
-## Features
+## 🎯 这个项目有什么用？
 
-- 🤖 **12 AI Providers** - OpenAI, Claude, Ollama, MiMo, DeepSeek, Qwen, Gemini, Zhipu, Ernie, Doubao, Kimi, Spark
-- 📝 **Conventional Commits** - Generates properly formatted commit messages
-- 🪝 **Git Hook Integration** - Auto-generate on `git commit`
-- 🌏 **Chinese Support** - Generate commit messages in Chinese
-- 📊 **History Analysis** - Analyze commit history and style
-- ⚡ **Fast & Lightweight** - Built with TypeScript, runs on Node.js
-- 🎨 **Beautiful CLI** - Colored output with spinners
+### 解决的问题
 
-## Installation
+你是否遇到过这些情况？
+
+- ❌ `git commit -m "fix bug"` - 信息太模糊，不知道修了什么
+- ❌ `git commit -m "update"` - 完全没有信息量
+- ❌ `git commit -m "asdfgh"` - 乱写一通
+- ❌ 每次都要想怎么写 commit 信息，浪费时间
+
+### 解决方案
+
+**git-commit-gen** 使用 AI 自动生成符合 [Conventional Commits](https://www.conventionalcommits.org/) 规范的 commit 信息：
+
+- ✅ `feat(login): 添加用户登录功能` - 清晰明了
+- ✅ `fix(api): 修复订单查询超时问题` - 专业规范
+- ✅ `docs: 更新 README 文档` - 标准格式
+
+### 核心价值
+
+| 价值 | 说明 |
+|------|------|
+| 🕐 **节省时间** | 不用再想怎么写 commit 信息 |
+| 📏 **统一规范** | 自动生成符合 Conventional Commits 的信息 |
+| 🇨🇳 **中文支持** | 支持生成中文 commit 信息 |
+| 🤖 **12 种 AI 模型** | 支持国内外主流大模型 |
+| 📊 **历史分析** | 分析你的 commit 风格，提供改进建议 |
+
+---
+
+## 🚀 快速开始
+
+### 安装
 
 ```bash
-npm install -g git-commit-gen
+# 克隆项目
+git clone https://github.com/H66666666666666/git-commit-gen.git
+cd git-commit-gen
+
+# 安装依赖
+npm install
+
+# 全局安装
+npm link
 ```
 
-## Quick Start
+### 配置 API Key
 
 ```bash
-# Stage your changes
-git add .
-
-# Generate commit message
-git-commit-gen
-
-# Generate in Chinese
-git-commit-gen --language zh
-
-# Auto-commit with generated message
-git-commit-gen --auto
-```
-
-## Supported AI Providers
-
-| Provider | Model | API Platform |
-|----------|-------|--------------|
-| **OpenAI** | gpt-4o-mini | platform.openai.com |
-| **Claude** | claude-3-haiku | console.anthropic.com |
-| **Ollama** | codellama | ollama.ai (local) |
-| **MiMo** | mimo-v2.5-pro | xiaomimimo.com |
-| **DeepSeek** | deepseek-chat | platform.deepseek.com |
-| **Qwen** | qwen-turbo | dashscope.aliyuncs.com |
-| **Gemini** | gemini-pro | makersuite.google.com |
-| **Zhipu** | glm-4-flash | open.bigmodel.cn |
-| **Ernie** | ernie-speed-128k | aip.baidubce.com |
-| **Doubao** | doubao-lite-4k | ark.cn-beijing.volces.com |
-| **Kimi** | moonshot-v1-8k | api.moonshot.cn |
-| **Spark** | generalv3.5 | spark-api-open.xf-yun.com |
-
-## Configuration
-
-```bash
-# Set provider
+# 配置小米 MiMo（推荐，免费）
 git-commit-gen config set-provider mimo
+git-commit-gen config set-mimo-key 你的API_KEY
 
-# Set API keys
-git-commit-gen config set-openai-key sk-xxx
-git-commit-gen config set-deepseek-key sk-xxx
-git-commit-gen config set-qwen-key sk-xxx
-git-commit-gen config set-gemini-key AIzaSyxxx
-git-commit-gen config set-zhipu-key xxx
-git-commit-gen config set-ernie-key <apiKey> <secretKey>
-git-commit-gen config set-doubao-key xxx
-git-commit-gen config set-kimi-key sk-xxx
-git-commit-gen config set-spark-key <apiKey> <appId>
-git-commit-gen config set-mimo-key tp-xxx
-
-# Set models
-git-commit-gen config set-deepseek-model deepseek-coder
-git-commit-gen config set-qwen-model qwen-plus
-git-commit-gen config set-gemini-model gemini-pro
-git-commit-gen config set-mimo-model mimo-v2.5-pro
-
-# View current config
-git-commit-gen config
+# 或者配置其他模型
+git-commit-gen config set-provider deepseek
+git-commit-gen config set-deepseek-key 你的API_KEY
 ```
 
-## Usage
-
-### Generate Commit Message
+### 使用
 
 ```bash
-# Basic usage (English)
-git-commit-gen
+# 方式 1：一键提交（推荐）
+git add . && git-commit-gen --language zh --auto
 
-# Chinese output
+# 方式 2：生成信息后手动提交
+git add .
 git-commit-gen --language zh
+# 复制生成的 commit 信息
+git commit -m "feat(xxx): xxx"
 
-# Use specific provider
-git-commit-gen --provider deepseek
-git-commit-gen --provider qwen
-git-commit-gen --provider mimo
-
-# Auto-commit
-git-commit-gen --auto
+# 方式 3：使用自动监听
+~/bin/auto-commit
+# 之后修改代码会自动提交！
 ```
 
-### Git Hook Setup
+---
+
+## 📖 详细使用说明
+
+### 支持的 AI 模型
+
+| 模型 | 公司 | 特点 | API 平台 |
+|------|------|------|----------|
+| **MiMo** | 小米 | 推荐，免费 | xiaomimimo.com |
+| **DeepSeek** | 深度求索 | 性价比高 | platform.deepseek.com |
+| **Qwen** | 阿里 | 中文优秀 | dashscope.aliyuncs.com |
+| **Gemini** | Google | 多模态 | makersuite.google.com |
+| **Zhipu** | 智谱AI | 开源 | open.bigmodel.cn |
+| **Ernie** | 百度 | 中文好 | aip.baidubce.com |
+| **Doubao** | 字节跳动 | 快速 | ark.cn-beijing.volces.com |
+| **Kimi** | 月之暗面 | 长文本 | api.moonshot.cn |
+| **Spark** | 科大讯飞 | 语音强 | spark-api-open.xf-yun.com |
+| **OpenAI** | OpenAI | GPT-4 | platform.openai.com |
+| **Claude** | Anthropic | 安全 | console.anthropic.com |
+| **Ollama** | 本地 | 免费 | ollama.ai |
+
+### 命令列表
 
 ```bash
-# Install hook
-git-commit-gen --install-hook
+# 生成 commit 信息
+git-commit-gen                    # 英文
+git-commit-gen --language zh      # 中文
+git-commit-gen --provider deepseek  # 指定模型
+git-commit-gen --auto             # 自动提交
 
-# Now just use git commit as normal
-git commit
-# Commit message will be auto-generated!
+# 配置管理
+git-commit-gen config                           # 查看配置
+git-commit-gen config set-provider mimo         # 设置模型
+git-commit-gen config set-mimo-key xxx          # 设置 API Key
 
-# Uninstall hook
-git-commit-gen --uninstall-hook
+# 历史分析
+git-commit-gen history             # 分析最近 50 条
+git-commit-gen history --limit 10  # 分析最近 10 条
+
+# Git Hook
+git-commit-gen --install-hook    # 安装 hook
+git-commit-gen --uninstall-hook  # 卸载 hook
 ```
 
-### History Analysis
+### 实际使用示例
 
 ```bash
-# Analyze last 50 commits
-git-commit-gen history
+# 示例 1：修改了登录功能
+git add src/login.ts
+git-commit-gen --language zh
+# 输出：feat(登录): 添加用户登录功能
 
-# Analyze last 10 commits
-git-commit-gen history --limit 10
+# 示例 2：修复了 bug
+git add src/utils.ts
+git-commit-gen --language zh
+# 输出：fix(工具): 修复日期格式化问题
+
+# 示例 3：更新了文档
+git add README.md
+git-commit-gen --language zh
+# 输出：docs: 更新项目说明文档
+
+# 示例 4：一键提交（最简单）
+git add . && git-commit-gen --language zh --auto
 ```
 
-**Example Output:**
+---
+
+## 🛠️ 高级功能
+
+### 1. 历史风格分析
+
+```bash
+# 分析你的 commit 历史
+git-commit-gen history --limit 20
+```
+
+**输出示例：**
 ```
 📊 Commit 历史分析报告
 ========================================
@@ -148,64 +180,117 @@ git-commit-gen history --limit 10
   - 信息偏长，建议精简到 50 字符以内
 ```
 
-## Options
-
-```
-Usage: git-commit-gen [options] [command]
-
-Options:
-  -V, --version              output the version number
-  -p, --provider <provider>  AI provider (openai, claude, ollama, mimo, deepseek, qwen, gemini, zhipu, ernie, doubao, kimi, spark)
-  -a, --auto                 Auto commit after generating message (default: false)
-  -l, --language <language>  Output language (en, zh) (default: "en")
-  --install-hook             Install as Git prepare-commit-msg hook
-  --uninstall-hook           Uninstall Git hook
-  -h, --help                 display help for command
-
-Commands:
-  config                     Manage configuration
-  history [options]          Analyze commit history and style
-```
-
-## Examples
+### 2. 自动监听
 
 ```bash
-# Generate with MiMo (小米)
-git-commit-gen --provider mimo --language zh
+# 启动自动监听
+~/bin/auto-commit
 
-# Generate with DeepSeek
-git-commit-gen --provider deepseek
-
-# Generate with Qwen (通义千问)
-git-commit-gen --provider qwen --language zh
-
-# Analyze commit history
-git-commit-gen history --limit 20
-
-# Auto-commit with specific provider
-git-commit-gen --provider mimo --auto
+# 之后修改代码会自动提交！
 ```
 
-## Development
+### 3. Git Hook
 
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/git-commit-gen.git
-cd git-commit-gen
+# 安装 hook（每次 git commit 自动生成）
+git-commit-gen --install-hook
 
-# Install dependencies
-npm install
+# 之后每次 git commit 都会自动生成 commit 信息
+```
 
-# Run in dev mode
-npm run dev
+---
 
-# Run tests
+## 📁 项目结构
+
+```
+git-commit-gen/
+├── src/
+│   ├── index.ts              # 入口
+│   ├── types.ts              # 类型定义
+│   ├── commands/
+│   │   ├── generate.ts       # 生成命令
+│   │   ├── config.ts         # 配置命令
+│   │   └── history.ts        # 历史分析命令
+│   ├── core/
+│   │   ├── git.ts            # Git 操作
+│   │   ├── ai.ts             # AI 调用
+│   │   ├── prompt.ts         # Prompt 模板
+│   │   ├── parser.ts         # 输出解析
+│   │   └── history.ts        # 历史分析
+│   ├── providers/            # 12 个 AI 模型
+│   │   ├── openai.ts
+│   │   ├── ollama.ts
+│   │   ├── mimo.ts
+│   │   ├── deepseek.ts
+│   │   ├── qwen.ts
+│   │   ├── gemini.ts
+│   │   ├── zhipu.ts
+│   │   ├── ernie.ts
+│   │   ├── doubao.ts
+│   │   ├── kimi.ts
+│   │   └── spark.ts
+│   └── utils/
+│       ├── config.ts
+│       ├── logger.ts
+│       └── git-hook.ts
+├── tests/
+├── package.json
+├── README.md
+└── dist/
+```
+
+---
+
+## 🧪 测试
+
+```bash
+# 运行测试
 npm test
 
-# Build
-npm run build
+# 测试结果
+✓ tests/core/git.test.ts (1 test)
+✓ tests/core/parser.test.ts (9 tests)
+
+Test Files  2 passed (2)
+     Tests  10 passed (10)
 ```
 
-## License
+---
 
-MIT
+## 📦 技术栈
+
+| 技术 | 用途 |
+|------|------|
+| **TypeScript** | 类型安全 |
+| **Commander** | CLI 框架 |
+| **simple-git** | Git 操作 |
+| **chalk** | 终端美化 |
+| **ora** | 加载动画 |
+| **Vitest** | 测试框架 |
+| **tsup** | 构建工具 |
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+---
+
+## 📄 许可证
+
+MIT License
+
+---
+
+## 🙏 致谢
+
+- [Conventional Commits](https://www.conventionalcommits.org/) - Commit 规范
+- [Commander.js](https://github.com/tj/commander.js/) - CLI 框架
+- [simple-git](https://github.com/steveukx/git-js) - Git 操作库
+
+---
+
+## 📞 联系方式
+
+- GitHub: [H66666666666666](https://github.com/H66666666666666)
