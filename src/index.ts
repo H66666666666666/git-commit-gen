@@ -40,7 +40,7 @@ program
     }
 
     await generateCommand({
-      provider: options.provider,
+      provider: options.provider !== 'openai' ? options.provider : undefined,
       auto: options.auto,
       language: options.language,
     });

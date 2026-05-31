@@ -1,6 +1,7 @@
 import type { AIProvider, GenerateOptions } from '../types.js';
 import { OpenAIProvider } from '../providers/openai.js';
 import { OllamaProvider } from '../providers/ollama.js';
+import { MimoProvider } from '../providers/mimo.js';
 import { buildPrompt } from './prompt.js';
 import { parseCommitMessage, isValidConventionalCommit, suggestFix } from './parser.js';
 
@@ -38,3 +39,4 @@ export async function generateCommitMessage(
 
 registerProvider(new OpenAIProvider());
 registerProvider(new OllamaProvider());
+registerProvider(new MimoProvider());

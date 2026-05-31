@@ -1,5 +1,5 @@
 export interface GenerateOptions {
-  provider?: 'openai' | 'claude' | 'ollama';
+  provider?: 'openai' | 'claude' | 'ollama' | 'mimo';
   auto?: boolean;
   language?: 'en' | 'zh';
 }
@@ -10,11 +10,14 @@ export interface AIProvider {
 }
 
 export interface Config {
-  provider: 'openai' | 'claude' | 'ollama';
+  provider: 'openai' | 'claude' | 'ollama' | 'mimo';
   openaiApiKey?: string;
   claudeApiKey?: string;
   ollamaModel?: string;
   ollamaUrl?: string;
+  mimoApiKey?: string;
+  mimoBaseUrl?: string;
+  mimoModel?: string;
   language: 'en' | 'zh';
 }
 

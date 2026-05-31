@@ -2,6 +2,7 @@ import ora from 'ora';
 import simpleGit from 'simple-git';
 import { getStagedDiff, hasStagedChanges } from '../core/git.js';
 import { generateCommitMessage } from '../core/ai.js';
+import { loadConfig } from '../utils/config.js';
 import { logger } from '../utils/logger.js';
 import type { GenerateOptions } from '../types.js';
 
@@ -14,6 +15,12 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     process.exit(1);
   }
 
+  const config = loadConfig();
+  const mergedOptions: GenerateOptions = {
+    provider: options.provider || config.provider,
+    language: options.language || config.language,
+  };
+
   const spinner = ora('Analyzing staged changes...').start();
 
   try {
@@ -21,7 +28,7 @@ export async function generateCommand(options: GenerateOptions): Promise<void> {
     spinner.text = `Found ${diff.files.length} changed file(s), +${diff.insertions} -${diff.deletions}`;
 
     spinner.text = 'Generating commit message with AI...';
-    const message = await generateCommitMessage(diff.staged, options);
+    const message = await generateCommitMessage(diff.staged, mergedOptions);
 
     spinner.stop();
     logger.commit(message);
