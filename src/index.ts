@@ -16,7 +16,7 @@ program
   .version('1.0.0');
 
 program
-  .option('-p, --provider <provider>', 'AI provider (openai, claude, ollama)', 'openai')
+  .option('-p, --provider <provider>', 'AI provider (openai, claude, ollama, mimo, deepseek, qwen, gemini, zhipu, ernie, doubao, kimi, spark)')
   .option('-a, --auto', 'Auto commit after generating message', false)
   .option('-l, --language <language>', 'Output language (en, zh)', 'en')
   .option('--install-hook', 'Install as Git prepare-commit-msg hook')

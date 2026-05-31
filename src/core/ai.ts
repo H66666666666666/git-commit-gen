@@ -1,7 +1,15 @@
-import type { AIProvider, GenerateOptions } from '../types.js';
+import type { AIProvider, GenerateOptions, ProviderName } from '../types.js';
 import { OpenAIProvider } from '../providers/openai.js';
 import { OllamaProvider } from '../providers/ollama.js';
 import { MimoProvider } from '../providers/mimo.js';
+import { DeepSeekProvider } from '../providers/deepseek.js';
+import { QwenProvider } from '../providers/qwen.js';
+import { GeminiProvider } from '../providers/gemini.js';
+import { ZhipuProvider } from '../providers/zhipu.js';
+import { ErnieProvider } from '../providers/ernie.js';
+import { DoubaoProvider } from '../providers/doubao.js';
+import { KimiProvider } from '../providers/kimi.js';
+import { SparkProvider } from '../providers/spark.js';
 import { buildPrompt } from './prompt.js';
 import { parseCommitMessage, isValidConventionalCommit, suggestFix } from './parser.js';
 
@@ -15,6 +23,10 @@ export function getProvider(name: string): AIProvider | undefined {
   return providers[name];
 }
 
+export function getAvailableProviders(): string[] {
+  return Object.keys(providers);
+}
+
 export async function generateCommitMessage(
   diff: string,
   options?: GenerateOptions
@@ -23,10 +35,11 @@ export async function generateCommitMessage(
   const provider = providers[providerName];
 
   if (!provider) {
-    throw new Error(`Provider "${providerName}" not found. Available: ${Object.keys(providers).join(', ')}`);
+    throw new Error(
+      `Provider "${providerName}" not found. Available: ${Object.keys(providers).join(', ')}`
+    );
   }
 
-  const prompt = buildPrompt(diff, options);
   const rawMessage = await provider.generateCommitMessage(diff, options);
   const message = parseCommitMessage(rawMessage);
 
@@ -37,6 +50,15 @@ export async function generateCommitMessage(
   return suggestFix(message);
 }
 
+// 注册所有 provider
 registerProvider(new OpenAIProvider());
 registerProvider(new OllamaProvider());
 registerProvider(new MimoProvider());
+registerProvider(new DeepSeekProvider());
+registerProvider(new QwenProvider());
+registerProvider(new GeminiProvider());
+registerProvider(new ZhipuProvider());
+registerProvider(new ErnieProvider());
+registerProvider(new DoubaoProvider());
+registerProvider(new KimiProvider());
+registerProvider(new SparkProvider());

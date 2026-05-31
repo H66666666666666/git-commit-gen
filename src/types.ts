@@ -1,5 +1,19 @@
+export type ProviderName =
+  | 'openai'
+  | 'claude'
+  | 'ollama'
+  | 'mimo'
+  | 'deepseek'
+  | 'qwen'
+  | 'gemini'
+  | 'zhipu'
+  | 'ernie'
+  | 'doubao'
+  | 'kimi'
+  | 'spark';
+
 export interface GenerateOptions {
-  provider?: 'openai' | 'claude' | 'ollama' | 'mimo';
+  provider?: ProviderName;
   auto?: boolean;
   language?: 'en' | 'zh';
 }
@@ -10,15 +24,61 @@ export interface AIProvider {
 }
 
 export interface Config {
-  provider: 'openai' | 'claude' | 'ollama' | 'mimo';
+  provider: ProviderName;
+  language: 'en' | 'zh';
+
+  // OpenAI
   openaiApiKey?: string;
+
+  // Claude
   claudeApiKey?: string;
+
+  // Ollama
   ollamaModel?: string;
   ollamaUrl?: string;
+
+  // MiMo
   mimoApiKey?: string;
   mimoBaseUrl?: string;
   mimoModel?: string;
-  language: 'en' | 'zh';
+
+  // DeepSeek
+  deepseekApiKey?: string;
+  deepseekBaseUrl?: string;
+  deepseekModel?: string;
+
+  // Qwen (通义千问)
+  qwenApiKey?: string;
+  qwenBaseUrl?: string;
+  qwenModel?: string;
+
+  // Gemini
+  geminiApiKey?: string;
+  geminiModel?: string;
+
+  // Zhipu (智谱清言)
+  zhipuApiKey?: string;
+  zhipuModel?: string;
+
+  // Ernie (文心一言)
+  ernieApiKey?: string;
+  ernieSecretKey?: string;
+  ernieModel?: string;
+
+  // Doubao (豆包)
+  doubaoApiKey?: string;
+  doubaoBaseUrl?: string;
+  doubaoModel?: string;
+
+  // Kimi
+  kimiApiKey?: string;
+  kimiBaseUrl?: string;
+  kimiModel?: string;
+
+  // Spark (讯飞星火)
+  sparkApiKey?: string;
+  sparkAppId?: string;
+  sparkModel?: string;
 }
 
 export interface GitDiff {
