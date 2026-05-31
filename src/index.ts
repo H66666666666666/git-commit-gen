@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { generateCommand } from './commands/generate.js';
 import { configCommand } from './commands/config.js';
+import { historyCommand } from './commands/history.js';
 import { installHook, uninstallHook } from './utils/git-hook.js';
 import { isGitRepo } from './core/git.js';
 import { logger } from './utils/logger.js';
@@ -47,5 +48,6 @@ program
   });
 
 program.addCommand(configCommand());
+program.addCommand(historyCommand());
 
 program.parse();

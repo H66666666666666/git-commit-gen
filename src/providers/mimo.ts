@@ -14,10 +14,14 @@ export class MimoProvider implements AIProvider {
       throw new Error('MiMo API key not configured. Run: git-commit-gen config --set-mimo-key <key>');
     }
 
-    const language = options?.language === 'zh' ? '中文' : 'English';
+    const isZh = options?.language === 'zh';
 
     // MiMo is a reasoning model, needs simpler prompt and more tokens
-    const prompt = `Write a git commit message for these changes. Use format: type(scope): description. Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore. Only write the commit message, nothing else. Use ${language}.
+    const prompt = isZh
+      ? `为以下代码变更生成 Git commit 信息。格式：type(scope): description。type 必须是英文，scope 和 description 用中文。只输出 commit 信息，不要其他内容。type 类型：feat, fix, docs, style, refactor, perf, test, build, ci, chore
+
+${diff.slice(0, 3000)}`
+      : `Write a git commit message for these changes. Use format: type(scope): description. Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore. Only write the commit message, nothing else.
 
 ${diff.slice(0, 3000)}`;
 
