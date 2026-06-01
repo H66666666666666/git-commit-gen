@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Commit Gen - AI 驱动的 Commit 信息生成器</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    .transition-all { transition: all 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- 导航栏 -->
+  <nav class="gradient-bg text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <span class="text-2xl font-bold">🤖 Git Commit Gen</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="#" onclick="showPage('dashboard')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Dashboard</a>
+          <a href="#" onclick="showPage('history')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">History</a>
+          <a href="#" onclick="showPage('settings')" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Settings</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要内容 -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Dashboard 页面 -->
+    <div id="dashboard" class="page">
+      <!-- 状态卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Staged Changes</p>
+              <p id="staged-count" class="text-2xl font-semibold text-gray-900">-</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Current Provider</p>
+              <p id="current-provider" class="text-2xl font-semibold text-gray-900">-</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md p-6 card-hover transition-all">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-500">Language</p>
+              <p id="current-language" class="text-2xl font-semibold text-gray-900">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 生成 Commit -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">🎯 Generate Commit Message</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+            <select id="provider-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <!-- 动态加载 -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+            <select id="language-select" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="generateCommit()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all">
+          🚀 Generate Commit Message
+        </button>
+      </div>
+
+      <!-- 生成结果 -->
+      <div id="result" class="bg-white rounded-xl shadow-md p-6 hidden">
+        <h2 class="text-xl font-semibold mb-4">📝 Generated Commit Message</h2>
+        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+          <code id="commit-message" class="text-lg font-mono text-gray-800"></code>
+        </div>
+        <div id="commit-stats" class="text-sm text-gray-500 mb-4"></div>
+        <div class="flex space-x-4">
+          <button onclick="copyCommit()" class="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-200 transition-all">
+            📋 Copy
+          </button>
+          <button onclick="autoCommit()" class="flex-1 bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-all">
+            ✅ Auto Commit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- History 页面 -->
+    <div id="history" class="page hidden">
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">📊 Commit History Analysis</h2>
+        <div class="flex items-center space-x-4 mb-4">
+          <label class="text-sm font-medium text-gray-700">Limit:</label>
+          <input type="number" id="history-limit" value="50" min="1" max="100" class="px-3 py-2 border border-gray-300 rounded-lg w-24">
+          <button onclick="loadHistory()" class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-all">
+            🔄 Load
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 统计信息 -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <h3 class="text-lg font-semibold mb-4">📈 Statistics</h3>
+          <div id="history-stats" class="space-y-4">
+            <!-- 动态加载 -->
+          </div>
+        </div>
+
+        <!-- 图表 -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+          <h3 class="text-lg font-semibold mb-4">📊 Type Distribution</h3>
+          <canvas id="type-chart" width="400" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings 页面 -->
+    <div id="settings" class="page hidden">
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-6">⚙️ Settings</h2>
+
+        <div class="space-y-6">
+          <!-- Provider 设置 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Provider</label>
+            <select id="settings-provider" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <!-- 动态加载 -->
+            </select>
+          </div>
+
+          <!-- Language 设置 -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+            <select id="settings-language" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="en">English</option>
+              <option value="zh">中文</option>
+            </select>
+          </div>
+
+          <!-- API Key 设置 -->
+          <div id="api-key-section">
+            <label class="block text-sm font-medium text-gray-700 mb-2">API Key</label>
+            <input type="password" id="settings-api-key" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your API key">
+          </div>
+
+          <!-- 保存按钮 -->
+          <button onclick="saveSettings()" class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all">
+            💾 Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 通知 -->
+  <div id="notification" class="fixed bottom-4 right-4 hidden">
+    <div class="bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg">
+      <span id="notification-text"></span>
+    </div>
+  </div>
+
+  <script>
+    // 全局状态
+    let currentPage = 'dashboard';
+    let providers = [];
+
+    // 页面加载时初始化
+    window.onload = function() {
+      loadStatus();
+      loadProviders();
+    };
+
+    // 显示页面
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById(page).classList.remove('hidden');
+      currentPage = page;
+
+      if (page === 'history') {
+        loadHistory();
+      }
+    }
+
+    // 加载状态
+    async function loadStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const data = await response.json();
+
+        document.getElementById('staged-count').textContent = data.hasStagedChanges ? 'Yes' : 'No';
+        document.getElementById('current-provider').textContent = data.provider || '-';
+        document.getElementById('current-language').textContent = data.language === 'zh' ? '中文' : 'English';
+      } catch (error) {
+        console.error('Failed to load status:', error);
+      }
+    }
+
+    // 加载可用模型
+    async function loadProviders() {
+      try {
+        const response = await fetch('/api/providers');
+        providers = await response.json();
+
+        const providerSelect = document.getElementById('provider-select');
+        const settingsProvider = document.getElementById('settings-provider');
+
+        providers.forEach(provider => {
+          providerSelect.innerHTML += `<option value="${provider}">${provider}</option>`;
+          settingsProvider.innerHTML += `<option value="${provider}">${provider}</option>`;
+        });
+      } catch (error) {
+        console.error('Failed to load providers:', error);
+      }
+    }
+
+    // 生成 commit
+    async function generateCommit() {
+      const provider = document.getElementById('provider-select').value;
+      const language = document.getElementById('language-select').value;
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider, language }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          document.getElementById('commit-message').textContent = data.message;
+          document.getElementById('commit-stats').textContent =
+            `${data.stats.files} files changed, +${data.stats.insertions} -${data.stats.deletions}`;
+          document.getElementById('result').classList.remove('hidden');
+          showNotification('Commit message generated!');
+        } else {
+          showNotification('Error: ' + data.error, true);
+        }
+      } catch (error) {
+        showNotification('Failed to generate commit', true);
+      }
+    }
+
+    // 复制 commit
+    function copyCommit() {
+      const message = document.getElementById('commit-message').textContent;
+      navigator.clipboard.writeText(message);
+      showNotification('Copied to clipboard!');
+    }
+
+    // 自动提交
+    async function autoCommit() {
+      const message = document.getElementById('commit-message').textContent;
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: document.getElementById('provider-select').value, language: document.getElementById('language-select').value, auto: true }),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showNotification('Committed successfully!');
+          loadStatus();
+        }
+      } catch (error) {
+        showNotification('Failed to commit', true);
+      }
+    }
+
+    // 加载历史
+    async function loadHistory() {
+      const limit = document.getElementById('history-limit').value;
+
+      try {
+        const response = await fetch(`/api/history?limit=${limit}`);
+        const data = await response.json();
+
+        // 更新统计信息
+        const statsHtml = `
+          <div class="flex justify-between">
+            <span class="text-gray-500">Total Commits:</span>
+            <span class="font-semibold">${data.stats.total}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Average Length:</span>
+            <span class="font-semibold">${data.stats.avgLength} chars</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Most Used Type:</span>
+            <span class="font-semibold">${data.stats.mostUsedType}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Common Scopes:</span>
+            <span class="font-semibold">${data.stats.commonScopes.join(', ') || 'None'}</span>
+          </div>
+        `;
+        document.getElementById('history-stats').innerHTML = statsHtml;
+
+        // 更新图表
+        const labels = Object.keys(data.stats.types);
+        const values = Object.values(data.stats.types);
+
+        const ctx = document.getElementById('type-chart').getContext('2d');
+        if (window.typeChart) {
+          window.typeChart.destroy();
+        }
+        window.typeChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              backgroundColor: [
+                '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
+                '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'
+              ],
+            }],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'bottom',
+              },
+            },
+          },
+        });
+      } catch (error) {
+        showNotification('Failed to load history', true);
+      }
+    }
+
+    // 保存设置
+    async function saveSettings() {
+      const provider = document.getElementById('settings-provider').value;
+      const language = document.getElementById('settings-language').value;
+      const apiKey = document.getElementById('settings-api-key').value;
+
+      try {
+        const config = { provider, language };
+        if (apiKey) {
+          config[`${provider}ApiKey`] = apiKey;
+        }
+
+        const response = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          showNotification('Settings saved!');
+          loadStatus();
+        }
+      } catch (error) {
+        showNotification('Failed to save settings', true);
+      }
+    }
+
+    // 显示通知
+    function showNotification(message, isError = false) {
+      const notification = document.getElementById('notification');
+      const notificationText = document.getElementById('notification-text');
+
+      notificationText.textContent = message;
+      notification.classList.remove('hidden');
+
+      if (isError) {
+        notification.querySelector('div').classList.add('bg-red-500');
+      } else {
+        notification.querySelector('div').classList.remove('bg-red-500');
+      }
+
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

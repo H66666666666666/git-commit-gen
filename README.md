@@ -30,6 +30,7 @@
 | 🇨🇳 **中文支持** | 支持生成中文 commit 信息 |
 | 🤖 **12 种 AI 模型** | 支持国内外主流大模型 |
 | 📊 **历史分析** | 分析你的 commit 风格，提供改进建议 |
+| 🌐 **Web 界面** | 可视化管理界面，操作更简单 |
 
 ---
 
@@ -120,6 +121,10 @@ git-commit-gen history --limit 10  # 分析最近 10 条
 # Git Hook
 git-commit-gen --install-hook    # 安装 hook
 git-commit-gen --uninstall-hook  # 卸载 hook
+
+# Web 界面
+git-commit-gen web               # 启动 Web 界面（默认端口 3000）
+git-commit-gen web --port 8080   # 指定端口
 ```
 
 ### 实际使用示例
@@ -198,6 +203,22 @@ git-commit-gen --install-hook
 # 之后每次 git commit 都会自动生成 commit 信息
 ```
 
+### 4. Web 界面
+
+```bash
+# 启动 Web 界面
+git-commit-gen web
+
+# 指定端口
+git-commit-gen web --port 8080
+```
+
+**访问 http://localhost:3000 即可使用可视化界面：**
+
+- 📊 **Dashboard** - 项目概览、快速生成 commit
+- 📈 **History** - commit 历史分析、图表展示
+- ⚙️ **Settings** - 配置管理、API Key 设置
+
 ---
 
 ## 📁 项目结构
@@ -210,7 +231,8 @@ git-commit-gen/
 │   ├── commands/
 │   │   ├── generate.ts       # 生成命令
 │   │   ├── config.ts         # 配置命令
-│   │   └── history.ts        # 历史分析命令
+│   │   ├── history.ts        # 历史分析命令
+│   │   └── web.ts            # Web 界面命令
 │   ├── core/
 │   │   ├── git.ts            # Git 操作
 │   │   ├── ai.ts             # AI 调用
@@ -229,10 +251,14 @@ git-commit-gen/
 │   │   ├── doubao.ts
 │   │   ├── kimi.ts
 │   │   └── spark.ts
-│   └── utils/
-│       ├── config.ts
-│       ├── logger.ts
-│       └── git-hook.ts
+│   ├── utils/
+│   │   ├── config.ts
+│   │   ├── logger.ts
+│   │   └── git-hook.ts
+│   └── web/
+│       ├── server.ts         # Express 服务器
+│       └── public/
+│           └── index.html    # 前端页面
 ├── tests/
 ├── package.json
 ├── README.md
