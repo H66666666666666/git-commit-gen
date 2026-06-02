@@ -294,6 +294,7 @@ Test Files  2 passed (2)
 | **ora** | 加载动画 |
 | **Vitest** | 测试框架 |
 | **tsup** | 构建工具 |
+| **GitHub Actions** | 自动化 CI/CD |
 
 ---
 
@@ -314,6 +315,7 @@ MIT License
 - [Conventional Commits](https://www.conventionalcommits.org/) - Commit 规范
 - [Commander.js](https://github.com/tj/commander.js/) - CLI 框架
 - [simple-git](https://github.com/steveukx/git-js) - Git 操作库
+- [GitHub Actions](https://github.com/features/actions) - 自动化 CI/CD
 
 ---
 
