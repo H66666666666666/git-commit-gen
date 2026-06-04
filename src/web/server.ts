@@ -241,6 +241,45 @@ app.get('/api/providers', (req, res) => {
   res.json(providers);
 });
 
+// API: 检查项目是否有未提交的更改
+app.get('/api/check-updates', async (req, res) => {
+  try {
+    const projects = loadProjects();
+    const updates = [];
+
+    for (const projectPath of projects) {
+      try {
+        const result = await new Promise((resolve, reject) => {
+          exec('git status --porcelain', { cwd: projectPath }, (error, stdout, stderr) => {
+            if (error) reject(error);
+            else resolve(stdout);
+          });
+        });
+
+        const hasChanges = (result as string).trim().length > 0;
+        updates.push({
+          path: projectPath,
+          hasChanges,
+          changesCount: (result as string).trim().split('\n').filter(line => line.trim()).length
+        });
+      } catch (error) {
+        updates.push({
+          path: projectPath,
+          hasChanges: false,
+          changesCount: 0,
+          error: 'Not a git repository'
+        });
+      }
+    }
+
+    res.json({ updates });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to check updates',
+    });
+  }
+});
+
 // API: 检查 Git 状态
 app.get('/api/status', async (req, res) => {
   try {

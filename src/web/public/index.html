@@ -234,11 +234,29 @@
     let currentPage = 'dashboard';
     let providers = [];
 
+    // 从 localStorage 读取上次的选择
+    function loadSavedSettings() {
+      const savedProvider = localStorage.getItem('git-commit-gen-provider');
+      const savedLanguage = localStorage.getItem('git-commit-gen-language');
+      return {
+        provider: savedProvider || 'mimo',
+        language: savedLanguage || 'zh'
+      };
+    }
+
+    // 保存设置到 localStorage
+    function saveSettings(provider, language) {
+      localStorage.setItem('git-commit-gen-provider', provider);
+      localStorage.setItem('git-commit-gen-language', language);
+    }
+
     // 页面加载时初始化
     window.onload = function() {
       loadStatus();
       loadProviders();
       loadProjects();
+      // 定期检查更新（每 30 秒）
+      setInterval(checkUpdates, 30000);
     };
 
     // 显示页面
@@ -277,21 +295,54 @@
         if (data.projects.length === 0) {
           projectList.innerHTML = '<p class="text-gray-500 text-sm">暂无项目，请添加项目</p>';
         } else {
-          projectList.innerHTML = data.projects.map(project => `
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div class="flex items-center space-x-3">
-                <span class="text-sm font-mono ${project === data.current ? 'text-blue-600 font-semibold' : 'text-gray-700'}">${project}</span>
-                ${project === data.current ? '<span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">当前</span>' : ''}
+          projectList.innerHTML = data.projects.map(project => {
+            // 将反斜杠转换为正斜杠，用于显示和传递
+            const normalizedPath = project.replace(/\\/g, '/');
+            const isCurrent = normalizedPath === data.current.replace(/\\/g, '/');
+            return `
+              <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <span class="text-sm font-mono ${isCurrent ? 'text-blue-600 font-semibold' : 'text-gray-700'}">${normalizedPath}</span>
+                  ${isCurrent ? '<span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">当前</span>' : ''}
+                  <span id="update-status-${normalizedPath.replace(/[^a-zA-Z0-9]/g, '-')}" class="text-xs"></span>
+                </div>
+                <div class="flex space-x-2">
+                  <button onclick="switchProject('${normalizedPath}')" class="text-sm text-blue-500 hover:text-blue-700">切换</button>
+                  <button onclick="removeProject('${normalizedPath}')" class="text-sm text-red-500 hover:text-red-700">删除</button>
+                </div>
               </div>
-              <div class="flex space-x-2">
-                <button onclick="switchProject('${project}')" class="text-sm text-blue-500 hover:text-blue-700">切换</button>
-                <button onclick="removeProject('${project}')" class="text-sm text-red-500 hover:text-red-700">删除</button>
-              </div>
-            </div>
-          `).join('');
+            `;
+          }).join('');
+
+          // 检查更新
+          checkUpdates();
         }
       } catch (error) {
         console.error('Failed to load projects:', error);
+      }
+    }
+
+    // 检查项目更新
+    async function checkUpdates() {
+      try {
+        const response = await fetch('/api/check-updates');
+        const data = await response.json();
+
+        data.updates.forEach(update => {
+          const elementId = `update-status-${update.path.replace(/\\/g, '/').replace(/[^a-zA-Z0-9]/g, '-')}`;
+          const element = document.getElementById(elementId);
+          if (element) {
+            if (update.error) {
+              element.innerHTML = `<span class="text-gray-400">(${update.error})</span>`;
+            } else if (update.hasChanges) {
+              element.innerHTML = `<span class="text-orange-500">⚠️ 有 ${update.changesCount} 个文件需要更新</span>`;
+            } else {
+              element.innerHTML = `<span class="text-green-500">✅ 已是最新</span>`;
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Failed to check updates:', error);
       }
     }
 
@@ -304,10 +355,12 @@
       }
 
       try {
+        // 将反斜杠转换为正斜杠
+        const normalizedPath = projectPath.replace(/\\/g, '/');
         const response = await fetch('/api/projects', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: projectPath }),
+          body: JSON.stringify({ path: normalizedPath }),
         });
 
         const data = await response.json();
@@ -331,10 +384,12 @@
       }
 
       try {
+        // 将反斜杠转换为正斜杠
+        const normalizedPath = projectPath.replace(/\\/g, '/');
         const response = await fetch('/api/projects', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: projectPath }),
+          body: JSON.stringify({ path: normalizedPath }),
         });
 
         const data = await response.json();
@@ -353,15 +408,17 @@
     // 切换项目
     async function switchProject(projectPath) {
       try {
+        // 将反斜杠转换为正斜杠
+        const normalizedPath = projectPath.replace(/\\/g, '/');
         const response = await fetch('/api/project', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: projectPath }),
+          body: JSON.stringify({ path: normalizedPath }),
         });
 
         const data = await response.json();
         if (data.success) {
-          showNotification('已切换到项目：' + projectPath);
+          showNotification('已切换到项目：' + normalizedPath);
           loadProjects();
           loadStatus();
         } else {
@@ -383,12 +440,33 @@
         const response = await fetch('/api/providers');
         providers = await response.json();
 
+        const savedSettings = loadSavedSettings();
         const providerSelect = document.getElementById('provider-select');
         const settingsProvider = document.getElementById('settings-provider');
+        const languageSelect = document.getElementById('language-select');
 
         providers.forEach(provider => {
           providerSelect.innerHTML += `<option value="${provider}">${provider}</option>`;
           settingsProvider.innerHTML += `<option value="${provider}">${provider}</option>`;
+        });
+
+        // 设置上次选择的模型
+        if (savedSettings.provider) {
+          providerSelect.value = savedSettings.provider;
+          settingsProvider.value = savedSettings.provider;
+        }
+
+        // 设置上次选择的语言
+        if (savedSettings.language) {
+          languageSelect.value = savedSettings.language;
+        }
+
+        // 监听选择变化，自动保存
+        providerSelect.addEventListener('change', function() {
+          saveSettings(this.value, languageSelect.value);
+        });
+        languageSelect.addEventListener('change', function() {
+          saveSettings(providerSelect.value, this.value);
         });
       } catch (error) {
         console.error('Failed to load providers:', error);
@@ -475,6 +553,8 @@
         const data = await response.json();
         if (data.success) {
           showNotification('提交成功！');
+          // 隐藏生成的 commit 信息
+          document.getElementById('result').classList.add('hidden');
           loadStatus();
         }
       } catch (error) {
@@ -491,6 +571,20 @@
         const data = await response.json();
 
         // 更新统计信息
+        const typeLabels = {
+          feat: '新功能',
+          fix: '修复',
+          docs: '文档',
+          style: '样式',
+          refactor: '重构',
+          perf: '性能',
+          test: '测试',
+          build: '构建',
+          ci: '持续集成',
+          chore: '杂项',
+          unknown: '未知'
+        };
+        const mostUsedType = typeLabels[data.stats.mostUsedType] || data.stats.mostUsedType;
         const statsHtml = `
           <div class="flex justify-between">
             <span class="text-gray-500">总提交数：</span>
@@ -502,7 +596,7 @@
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">最常用类型：</span>
-            <span class="font-semibold">${data.stats.mostUsedType}</span>
+            <span class="font-semibold">${mostUsedType}</span>
           </div>
           <div class="flex justify-between">
             <span class="text-gray-500">常见 Scope：</span>
@@ -512,7 +606,7 @@
         document.getElementById('history-stats').innerHTML = statsHtml;
 
         // 更新图表
-        const labels = Object.keys(data.stats.types);
+        const labels = Object.keys(data.stats.types).map(type => typeLabels[type] || type);
         const values = Object.values(data.stats.types);
 
         const ctx = document.getElementById('type-chart').getContext('2d');
@@ -553,6 +647,22 @@
             const scope = typeMatch ? typeMatch[2] : '';
             const description = typeMatch ? typeMatch[3] : msg;
 
+            // 类型中文映射
+            const typeLabels = {
+              feat: '新功能',
+              fix: '修复',
+              docs: '文档',
+              style: '样式',
+              refactor: '重构',
+              perf: '性能',
+              test: '测试',
+              build: '构建',
+              ci: '持续集成',
+              chore: '杂项',
+              unknown: '未知'
+            };
+            const typeLabel = typeLabels[type] || type;
+
             // 根据类型设置颜色
             const typeColors = {
               feat: 'bg-green-100 text-green-700',
@@ -571,7 +681,7 @@
             return `
               <div class="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all">
                 <span class="text-sm text-gray-500 mr-3">${index + 1}.</span>
-                <span class="px-2 py-1 rounded text-xs font-medium ${colorClass} mr-3">${type}</span>
+                <span class="px-2 py-1 rounded text-xs font-medium ${colorClass} mr-3">${typeLabel}</span>
                 ${scope ? `<span class="px-2 py-1 rounded text-xs bg-gray-200 text-gray-700 mr-3">${scope}</span>` : ''}
                 <span class="flex-1 text-gray-800">${description}</span>
               </div>
